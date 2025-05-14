@@ -1,10 +1,12 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status,viewsets
 from .serializers import UserRegistrationSerializer
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,IsAdminUser
+from .serializers import MovieSerializer
+from .models import Movies
 
 class UserRegistrationView(APIView):
     def post(self,request):
@@ -26,7 +28,12 @@ class UserLoginView(APIView):
             return Response({'error':'Invalid credentials'})
 
 class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self,request):
-        permission_classes = [IsAuthenticated]
         request.user.auth_token.delete()
         return Response({'message':'Logged out successfully'})
+    
+class MovieViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAdminUser]
+    queryset = Movies.objects.all()
+    serializer_class = MovieSerializer
