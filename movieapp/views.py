@@ -54,9 +54,11 @@ class MovieView(APIView):
         return Response({'error':'Invalid data'})
 
 class CartsView(APIView):
+    permission_classes=[IsAuthenticated]
     def post(self,request):
         serializer = CartsSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            carts = serializer.save(buyer=request.user)
+            carts.save()
             return Response({"message":"Added to carts successfully"},status=status.HTTP_201_CREATED)
         return Response({"error":"Invalid credentials"})
