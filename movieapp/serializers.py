@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Movies
+from .models import Movies,Carts
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(style={'input_type':'password'},write_only=True)
@@ -25,3 +25,8 @@ class MovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movies
         fields = '__all__'
+
+class CartsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Carts
+        fields = ['item','quantity']

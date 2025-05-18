@@ -4,9 +4,9 @@ from rest_framework import status,viewsets
 from .serializers import UserRegistrationSerializer
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import IsAuthenticated,IsAdminUser
-from .serializers import MovieSerializer
-from .models import Movies
+from rest_framework.permissions import IsAuthenticated,IsAdminUser,AllowAny
+from .serializers import MovieSerializer,CartsSerializer
+from .models import Movies,Carts
 
 class UserRegistrationView(APIView):
     def post(self,request):
@@ -33,7 +33,30 @@ class LogoutView(APIView):
         request.user.auth_token.delete()
         return Response({'message':'Logged out successfully'})
     
-class MovieViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAdminUser]
-    queryset = Movies.objects.all()
-    serializer_class = MovieSerializer
+class MovieView(APIView):
+
+    def get_permissions(self):
+        if self.request.method=='GET':
+            return [AllowAny()]
+        elif self.request.method=='POST':
+            return [IsAdminUser()]
+        return super().get_permissions()
+
+    def get(self,request):
+        movies = Movies.objects.all()
+        serializer = MovieSerializer(movies,many=True)
+        return Response(serializer.data)
+    def post(self,request):
+        serialzer = MovieSerializer(data=request.data)
+        if serialzer.is_valid():
+            serialzer.save()
+            return Response({'message':'movie added'},status=status.HTTP_201_CREATED)
+        return Response({'error':'Invalid data'})
+
+class CartsView(APIView):
+    def post(self,request):
+        serializer = CartsSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message":"Added to carts successfully"},status=status.HTTP_201_CREATED)
+        return Response({"error":"Invalid credentials"})
